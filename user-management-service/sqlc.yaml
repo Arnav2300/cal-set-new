@@ -1,0 +1,19 @@
+version: "2"
+cloud:
+    organization: ""
+    project: ""
+    hostname: ""
+servers: []
+sql:
+  - engine: "postgresql"
+    queries: "./db/query/query.sql"
+    schema: "./db/migrations"
+    gen:
+      go:
+        out: "api/dao"
+        sql_package: "pgx/v5"
+overrides:
+    go: null
+plugins: []
+rules: []
+options: {}
