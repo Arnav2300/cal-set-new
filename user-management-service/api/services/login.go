@@ -1,6 +1,6 @@
 package services
 
-func LoginService() []byte {
+func LoginService() {
 	//get email and password
 	//check if email is present, if not fail
 	//check if password hashes match, if not fail

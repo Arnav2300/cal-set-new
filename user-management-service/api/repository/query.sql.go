@@ -3,7 +3,7 @@
 //   sqlc v1.27.0
 // source: query.sql
 
-package dao
+package repository
 
 import (
 	"context"
@@ -49,7 +49,7 @@ DELETE FROM users
 WHERE id = $1
 `
 
-func (q *Queries) DeleteUserById(ctx context.Context, id int32) error {
+func (q *Queries) DeleteUserById(ctx context.Context, id pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, deleteUserById, id)
 	return err
 }
@@ -79,7 +79,7 @@ SELECT id, email, username, password, role, updated_at, created_at FROM users
 WHERE id= $1 LIMIT 1
 `
 
-func (q *Queries) GetUserById(ctx context.Context, id int32) (User, error) {
+func (q *Queries) GetUserById(ctx context.Context, id pgtype.UUID) (User, error) {
 	row := q.db.QueryRow(ctx, getUserById, id)
 	var i User
 	err := row.Scan(
@@ -155,7 +155,7 @@ WHERE id= $1
 `
 
 type UpdateUserByIdParams struct {
-	ID       int32
+	ID       pgtype.UUID
 	Username string
 	Password pgtype.Text
 }

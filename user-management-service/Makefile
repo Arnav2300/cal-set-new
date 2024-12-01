@@ -13,7 +13,6 @@ migrateup:
 migratedown:
 	migrate -path db/migrations -database "postgresql://root:root@localhost:5432/user_management?sslmode=disable" -verbose down
 
-run:
-	go run cmd/UserManagementService.go
+
 
 .PHONY: createdb

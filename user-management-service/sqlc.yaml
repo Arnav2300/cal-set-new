@@ -10,7 +10,7 @@ sql:
     schema: "./db/migrations"
     gen:
       go:
-        out: "api/dao"
+        out: "api/repository"
         sql_package: "pgx/v5"
 overrides:
     go: null

@@ -2,15 +2,15 @@
 // versions:
 //   sqlc v1.27.0
 
-package dao
+package repository
 
 import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type ProviderToken struct {
-	ID           int32
-	UserID       int32
+	ID           pgtype.UUID
+	UserID       pgtype.UUID
 	Provider     string
 	ProviderID   string
 	AccessToken  pgtype.Text
@@ -20,7 +20,7 @@ type ProviderToken struct {
 }
 
 type User struct {
-	ID        int32
+	ID        pgtype.UUID
 	Email     pgtype.Text
 	Username  string
 	Password  pgtype.Text

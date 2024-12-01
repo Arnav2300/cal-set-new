@@ -1,5 +1,5 @@
 CREATE TABLE "users" (
-  "id" integer PRIMARY KEY NOT NULL,
+  "id" UUID PRIMARY KEY NOT NULL,
   "email" varchar UNIQUE,
   "username" varchar UNIQUE NOT NULL,
   "password" varchar,
@@ -9,8 +9,8 @@ CREATE TABLE "users" (
 );
 
 CREATE TABLE "provider_tokens" (
-  "id" integer PRIMARY KEY NOT NULL,
-  "user_id" integer NOT NULL,
+  "id" UUID PRIMARY KEY NOT NULL,
+  "user_id" UUID NOT NULL,
   "provider" varchar NOT NULL,
   "provider_id" varchar NOT NULL,
   "access_token" varchar,
