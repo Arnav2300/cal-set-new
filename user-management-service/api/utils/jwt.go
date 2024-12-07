@@ -1,13 +1,16 @@
 package utils
 
 import (
+	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
+
 var jwtSecret = []byte("abcdefgh")
+
 func SignJwtToken(role, email, username string) (string, error) {
-	 // TODO: Replace with a secure secret from environment variables
+	// TODO: Replace with a secure secret from environment variables
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"exp":        time.Now().Add(10 * 24 * time.Hour).Unix(), // Expiry set for 10 days
 		"authorized": true,
@@ -23,14 +26,17 @@ func SignJwtToken(role, email, username string) (string, error) {
 }
 
 func VerifyJwtToken(tokenString string) error {
-	token,err:=jwt.Parse(tokenString,func(token *jwt.Token) (interface{},error){
-		return jwtSecret,nil
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
+		return jwtSecret, nil
 	})
-	if err!=nil{
+	if err != nil {
 		return err
 	}
-	if !token.Valid{
-		return error.New("Invalid token")
+	if !token.Valid {
+		return errors.New("invalid token")
 	}
 	return nil
 }

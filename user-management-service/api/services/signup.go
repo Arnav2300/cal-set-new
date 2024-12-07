@@ -2,12 +2,12 @@ package services
 
 import (
 	"fmt"
-	"user-management-service/api/repository"
+	"user-management-service/api/dto"
 )
 
-func SingupService(user repository.User) {
-	//get email,username, password and role
+func SingupService(user dto.SignupDTO) {
 	//check if email is already present in db, if yes then fail
+
 	//hash the password
 	//write into db
 	//return status created message
