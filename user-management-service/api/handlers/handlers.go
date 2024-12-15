@@ -2,37 +2,48 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"user-management-service/api/dto"
 	"user-management-service/api/repository"
 	"user-management-service/api/services"
 )
 
-func Login(w http.ResponseWriter, r *http.Request) {
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(`{"message":"login"}`))
 }
 
-func Signup(w http.ResponseWriter, r *http.Request) {
-	var user repository.User
+func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	err := json.NewDecoder(r.Body).Decode(&user)
+	var requestBody dto.SignupDTO
+	err := json.NewDecoder(r.Body).Decode(&requestBody)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"message":"` + err.Error() + `"}`))
+		fmt.Print("Error in request body:", err.Error())
+		json.NewEncoder(w).Encode(map[string]string{"message": "invalid request"})
 		return
 	}
-	if user.Email.String == "" || user.Password.String == "" || user.Role == "" || user.Username == "" {
+	if requestBody.Email == "" || requestBody.Password == "" || requestBody.Role == "" || requestBody.Username == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"message":"request is incomplete"}`))
+		fmt.Print("Incomplete request body")
+		json.NewEncoder(w).Encode(map[string]string{"message": "incomplete request"})
 		return
 	}
-	services.SingupService(user)
+	ctx := r.Context()
+	print(ctx)
+	var repo *repository.Queries
+	message, err := services.SingupService(ctx, repo, requestBody)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
+	}
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte(`{"message":"signup"}`))
+	json.NewEncoder(w).Encode(map[string]string{"message": message})
 }
 
-func ResetPassword(w http.ResponseWriter, r *http.Request) {
+func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
 	w.Write([]byte(`{"message":"reset password"}`))
