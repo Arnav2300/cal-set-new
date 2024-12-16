@@ -38,5 +38,7 @@ func VerifyJwtToken(tokenString string) error {
 	if !token.Valid {
 		return errors.New("invalid token")
 	}
+	// TODO: check if Valid checks for exp date
+
 	return nil
 }
