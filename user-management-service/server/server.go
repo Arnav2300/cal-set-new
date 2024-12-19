@@ -11,6 +11,7 @@ import (
 func StartServer(port string) {
 	r := mux.NewRouter()
 
+	r.HandleFunc("/health", handlers.HealthCheckHandler).Methods(("GET"))
 	r.HandleFunc("/login", handlers.LoginHandler).Methods("POST")
 	r.HandleFunc("/signup", handlers.SignupHandler).Methods("POST")
 	r.HandleFunc("/resetpassword", handlers.ResetPasswordHandler).Methods("PUT")

@@ -9,6 +9,15 @@ import (
 	"user-management-service/api/services"
 )
 
+func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{
+		"status":  "healthy",
+		"message": "the service is up and running!",
+	})
+}
+
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var requestBody dto.LoginDTO
