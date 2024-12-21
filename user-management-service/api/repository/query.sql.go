@@ -12,12 +12,13 @@ import (
 )
 
 const createUserViaEmail = `-- name: CreateUserViaEmail :one
-INSERT INTO users (email, username, password, role)
-VALUES ($1, $2, $3, $4)
+INSERT INTO users (id, email, username, password, role)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id, email, username, password, role, updated_at, created_at
 `
 
 type CreateUserViaEmailParams struct {
+	ID       pgtype.UUID
 	Email    pgtype.Text
 	Username string
 	Password pgtype.Text
@@ -26,6 +27,7 @@ type CreateUserViaEmailParams struct {
 
 func (q *Queries) CreateUserViaEmail(ctx context.Context, arg CreateUserViaEmailParams) (User, error) {
 	row := q.db.QueryRow(ctx, createUserViaEmail,
+		arg.ID,
 		arg.Email,
 		arg.Username,
 		arg.Password,

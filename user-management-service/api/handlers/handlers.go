@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -54,32 +55,34 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "login successful"})
 }
 
-func SignupHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	var requestBody dto.SignupDTO
-	err := json.NewDecoder(r.Body).Decode(&requestBody)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Print("Error in signup request body: ", err.Error())
-		json.NewEncoder(w).Encode(map[string]string{"message": "invalid request"})
-		return
+func SignupHandler(ctx context.Context, repo *repository.Queries) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		var requestBody dto.SignupDTO
+		err := json.NewDecoder(r.Body).Decode(&requestBody)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Print("Error in signup request body: ", err.Error())
+			json.NewEncoder(w).Encode(map[string]string{"message": "invalid request"})
+			return
+		}
+		if requestBody.Email == "" || requestBody.Password == "" || requestBody.Role == "" || requestBody.Username == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Print("Incomplete request body")
+			json.NewEncoder(w).Encode(map[string]string{"message": "incomplete request"})
+			return
+		}
+		// ctx := r.Context()
+		// print(ctx)
+		// var repo *repository.Queries
+		message, err := services.SingupService(ctx, repo, requestBody)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
+		}
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(map[string]string{"message": message})
 	}
-	if requestBody.Email == "" || requestBody.Password == "" || requestBody.Role == "" || requestBody.Username == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Print("Incomplete request body")
-		json.NewEncoder(w).Encode(map[string]string{"message": "incomplete request"})
-		return
-	}
-	ctx := r.Context()
-	print(ctx)
-	var repo *repository.Queries
-	message, err := services.SingupService(ctx, repo, requestBody)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
-	}
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]string{"message": message})
 }
 
 func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {

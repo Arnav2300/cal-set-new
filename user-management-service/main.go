@@ -6,6 +6,8 @@ import (
 )
 
 func main() {
+
 	config.PrintLogo()
 	server.StartServer(config.Port)
+
 }

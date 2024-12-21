@@ -1,6 +1,6 @@
 -- name: CreateUserViaEmail :one
-INSERT INTO users (email, username, password, role)
-VALUES ($1, $2, $3, $4)
+INSERT INTO users (id, email, username, password, role)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: UpdateUserById :exec

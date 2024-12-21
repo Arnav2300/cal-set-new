@@ -8,12 +8,14 @@ import (
 	"user-management-service/api/repository"
 	"user-management-service/api/utils"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func SingupService(ctx context.Context, q *repository.Queries, user dto.SignupDTO) (string, error) {
 	//check if email is already present in db, if yes then fail
 	existingUser, err := q.GetUserByEmail(ctx, pgtype.Text{String: user.Email, Valid: true})
+	fmt.Print("existing user->", err)
 	if err == nil && existingUser.Email.Valid {
 		return "", errors.New("email already registered")
 	}
@@ -29,6 +31,7 @@ func SingupService(ctx context.Context, q *repository.Queries, user dto.SignupDT
 
 	// create a param to persist in db
 	createParams := repository.CreateUserViaEmailParams{
+		ID:       pgtype.UUID{Bytes: uuid.New(), Valid: true},
 		Email:    pgtype.Text{String: user.Email, Valid: true},
 		Username: user.Username,
 		Password: pgtype.Text{String: hashedPassword, Valid: true},
