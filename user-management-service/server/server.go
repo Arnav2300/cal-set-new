@@ -20,7 +20,7 @@ func StartServer(port string) {
 	r := mux.NewRouter()
 	repo := repository.New(pool)
 	r.HandleFunc("/health", handlers.HealthCheckHandler).Methods(("GET"))
-	r.HandleFunc("/login", handlers.LoginHandler).Methods("POST")
+	r.HandleFunc("/login", handlers.LoginHandler(context.Background(), repo)).Methods("POST")
 	r.HandleFunc("/signup", handlers.SignupHandler(context.Background(), repo)).Methods("POST")
 	r.HandleFunc("/resetpassword", handlers.ResetPasswordHandler).Methods("PUT")
 

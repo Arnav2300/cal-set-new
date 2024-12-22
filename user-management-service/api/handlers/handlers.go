@@ -19,40 +19,40 @@ func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	var requestBody dto.LoginDTO
-	err := json.NewDecoder(r.Body).Decode(&requestBody)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Print("Error in login request body: ", err.Error())
-		json.NewEncoder(w).Encode(map[string]string{"message": "invalid request"})
-		return
+func LoginHandler(ctx context.Context, repo *repository.Queries) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		var requestBody dto.LoginDTO
+		err := json.NewDecoder(r.Body).Decode(&requestBody)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Print("Error in login request body: ", err.Error())
+			json.NewEncoder(w).Encode(map[string]string{"message": "invalid request"})
+			return
+		}
+		if requestBody.Email == "" || requestBody.Password == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Print("Incomplete request body")
+			json.NewEncoder(w).Encode(map[string]string{"message": "incomplete request"})
+			return
+		}
+		token, err := services.LoginService(ctx, repo, requestBody)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
+			return
+		}
+		http.SetCookie(w, &http.Cookie{
+			Name:     "auth_token",
+			Value:    token,
+			HttpOnly: true,
+			Secure:   false, // to ensure it's sent only over HTTPS set this to true
+			SameSite: http.SameSiteStrictMode,
+			Path:     "/",
+		})
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{"message": "login successful"})
 	}
-	if requestBody.Email == "" || requestBody.Password == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Print("Incomplete request body")
-		json.NewEncoder(w).Encode(map[string]string{"message": "incomplete request"})
-		return
-	}
-	ctx := r.Context()
-	print(ctx)
-	var repo *repository.Queries
-	token, err := services.LoginService(ctx, repo, requestBody)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
-	}
-	http.SetCookie(w, &http.Cookie{
-		Name:     "auth_token",
-		Value:    token,
-		HttpOnly: true,
-		Secure:   false, // to ensure it's sent only over HTTPS set this to true
-		SameSite: http.SameSiteStrictMode,
-		Path:     "/",
-	})
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "login successful"})
 }
 
 func SignupHandler(ctx context.Context, repo *repository.Queries) http.HandlerFunc {
@@ -79,6 +79,7 @@ func SignupHandler(ctx context.Context, repo *repository.Queries) http.HandlerFu
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
+			return
 		}
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(map[string]string{"message": message})
