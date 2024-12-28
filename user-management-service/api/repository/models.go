@@ -8,6 +8,14 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type PasswordResetToken struct {
+	UserID    pgtype.UUID
+	Token     pgtype.Text
+	ExpiresAt pgtype.Timestamp
+	CreatedAt pgtype.Timestamp
+	IsUsed    pgtype.Bool
+}
+
 type ProviderToken struct {
 	ID           pgtype.UUID
 	UserID       pgtype.UUID
@@ -21,7 +29,7 @@ type ProviderToken struct {
 
 type User struct {
 	ID        pgtype.UUID
-	Email     pgtype.Text
+	Email     string
 	Username  string
 	Password  pgtype.Text
 	Role      string

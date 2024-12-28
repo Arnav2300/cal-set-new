@@ -72,9 +72,6 @@ func SignupHandler(ctx context.Context, repo *repository.Queries) http.HandlerFu
 			json.NewEncoder(w).Encode(map[string]string{"message": "incomplete request"})
 			return
 		}
-		// ctx := r.Context()
-		// print(ctx)
-		// var repo *repository.Queries
 		message, err := services.SingupService(ctx, repo, requestBody)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -86,8 +83,18 @@ func SignupHandler(ctx context.Context, repo *repository.Queries) http.HandlerFu
 	}
 }
 
-func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusAccepted)
-	w.Write([]byte(`{"message":"reset password"}`))
+func ResetPasswordHandler(ctx context.Context, repo *repository.Queries) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		var req struct {
+			Email string `json:"token"`
+		}
+		err := json.NewDecoder(r.Body).Decode(&req)
+		if err != nil || req.Email == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"message": "invalid request"})
+			return
+		}
+
+	}
 }

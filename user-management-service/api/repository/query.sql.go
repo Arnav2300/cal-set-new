@@ -11,6 +11,22 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const createPasswordResetToken = `-- name: CreatePasswordResetToken :exec
+INSERT INTO password_reset_tokens (user_id, token, expires_at)
+VALUES ($1, $2, $3)
+`
+
+type CreatePasswordResetTokenParams struct {
+	UserID    pgtype.UUID
+	Token     pgtype.Text
+	ExpiresAt pgtype.Timestamp
+}
+
+func (q *Queries) CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) error {
+	_, err := q.db.Exec(ctx, createPasswordResetToken, arg.UserID, arg.Token, arg.ExpiresAt)
+	return err
+}
+
 const createUserViaEmail = `-- name: CreateUserViaEmail :one
 INSERT INTO users (id, email, username, password, role)
 VALUES ($1, $2, $3, $4, $5)
@@ -19,7 +35,7 @@ RETURNING id, email, username, password, role, updated_at, created_at
 
 type CreateUserViaEmailParams struct {
 	ID       pgtype.UUID
-	Email    pgtype.Text
+	Email    string
 	Username string
 	Password pgtype.Text
 	Role     string
@@ -46,6 +62,26 @@ func (q *Queries) CreateUserViaEmail(ctx context.Context, arg CreateUserViaEmail
 	return i, err
 }
 
+const deleteExpiredTokens = `-- name: DeleteExpiredTokens :exec
+DELETE FROM password_reset_tokens
+WHERE expires_at <= NOW()
+`
+
+func (q *Queries) DeleteExpiredTokens(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, deleteExpiredTokens)
+	return err
+}
+
+const deletePasswordResetToken = `-- name: DeletePasswordResetToken :exec
+DELETE FROM password_reset_tokens
+WHERE user_id = $1
+`
+
+func (q *Queries) DeletePasswordResetToken(ctx context.Context, userID pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deletePasswordResetToken, userID)
+	return err
+}
+
 const deleteUserById = `-- name: DeleteUserById :exec
 DELETE FROM users
 WHERE id = $1
@@ -56,12 +92,37 @@ func (q *Queries) DeleteUserById(ctx context.Context, id pgtype.UUID) error {
 	return err
 }
 
+const getPasswordResetTokenByUserID = `-- name: GetPasswordResetTokenByUserID :one
+SELECT user_id, token, expires_at, created_at
+FROM password_reset_tokens
+WHERE user_id = $1
+`
+
+type GetPasswordResetTokenByUserIDRow struct {
+	UserID    pgtype.UUID
+	Token     pgtype.Text
+	ExpiresAt pgtype.Timestamp
+	CreatedAt pgtype.Timestamp
+}
+
+func (q *Queries) GetPasswordResetTokenByUserID(ctx context.Context, userID pgtype.UUID) (GetPasswordResetTokenByUserIDRow, error) {
+	row := q.db.QueryRow(ctx, getPasswordResetTokenByUserID, userID)
+	var i GetPasswordResetTokenByUserIDRow
+	err := row.Scan(
+		&i.UserID,
+		&i.Token,
+		&i.ExpiresAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, email, username, password, role, updated_at, created_at FROM users
 WHERE email = $1 LIMIT 1
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email pgtype.Text) (User, error) {
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
 	row := q.db.QueryRow(ctx, getUserByEmail, email)
 	var i User
 	err := row.Scan(
