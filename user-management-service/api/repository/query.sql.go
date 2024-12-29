@@ -37,7 +37,7 @@ type CreateUserViaEmailParams struct {
 	ID       pgtype.UUID
 	Email    string
 	Username string
-	Password pgtype.Text
+	Password string
 	Role     string
 }
 
@@ -98,16 +98,9 @@ FROM password_reset_tokens
 WHERE user_id = $1
 `
 
-type GetPasswordResetTokenByUserIDRow struct {
-	UserID    pgtype.UUID
-	Token     pgtype.Text
-	ExpiresAt pgtype.Timestamp
-	CreatedAt pgtype.Timestamp
-}
-
-func (q *Queries) GetPasswordResetTokenByUserID(ctx context.Context, userID pgtype.UUID) (GetPasswordResetTokenByUserIDRow, error) {
+func (q *Queries) GetPasswordResetTokenByUserID(ctx context.Context, userID pgtype.UUID) (PasswordResetToken, error) {
 	row := q.db.QueryRow(ctx, getPasswordResetTokenByUserID, userID)
-	var i GetPasswordResetTokenByUserIDRow
+	var i PasswordResetToken
 	err := row.Scan(
 		&i.UserID,
 		&i.Token,
@@ -220,7 +213,7 @@ WHERE id= $1
 type UpdateUserByIdParams struct {
 	ID       pgtype.UUID
 	Username string
-	Password pgtype.Text
+	Password string
 }
 
 func (q *Queries) UpdateUserById(ctx context.Context, arg UpdateUserByIdParams) error {

@@ -83,7 +83,7 @@ func SignupHandler(ctx context.Context, repo *repository.Queries) http.HandlerFu
 	}
 }
 
-func ResetPasswordHandler(ctx context.Context, repo *repository.Queries) http.HandlerFunc {
+func ResetPasswordRequestHandler(ctx context.Context, repo *repository.Queries) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		var req struct {

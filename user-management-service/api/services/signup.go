@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"user-management-service/api/dto"
@@ -14,12 +15,12 @@ import (
 
 func SingupService(ctx context.Context, q *repository.Queries, user dto.SignupDTO) (string, error) {
 	//check if email is already present in db, if yes then fail
-	existingUser, err := q.GetUserByEmail(ctx, pgtype.Text{String: user.Email, Valid: true})
+	_, err := q.GetUserByEmail(ctx, user.Email)
 	fmt.Print("existing user->", err)
-	if err == nil && existingUser.Email.Valid {
+	if err == nil {
 		return "", errors.New("email already registered")
 	}
-	if err != nil && err.Error() != "no rows in result set" {
+	if !errors.Is(err, sql.ErrNoRows) {
 		return "", fmt.Errorf("error checking email: %w", err)
 	}
 
@@ -32,9 +33,9 @@ func SingupService(ctx context.Context, q *repository.Queries, user dto.SignupDT
 	// create a param to persist in db
 	createParams := repository.CreateUserViaEmailParams{
 		ID:       pgtype.UUID{Bytes: uuid.New(), Valid: true},
-		Email:    pgtype.Text{String: user.Email, Valid: true},
+		Email:    user.Email,
 		Username: user.Username,
-		Password: pgtype.Text{String: hashedPassword, Valid: true},
+		Password: hashedPassword,
 		Role:     user.Role,
 	}
 

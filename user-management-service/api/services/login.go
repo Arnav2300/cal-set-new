@@ -7,17 +7,15 @@ import (
 	"user-management-service/api/dto"
 	"user-management-service/api/repository"
 	"user-management-service/api/utils"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func LoginService(ctx context.Context, q *repository.Queries, credentials dto.LoginDTO) (string, error) {
-	user, err := q.GetUserByEmail(ctx, pgtype.Text{String: credentials.Email, Valid: true})
+	user, err := q.GetUserByEmail(ctx, credentials.Email)
 	if err != nil {
 		fmt.Printf("Error fetching user by email: %v", err)
 		return "", errors.New("incorrect email or password")
 	}
-	err = utils.VerifyPassword(user.Password.String, credentials.Password)
+	err = utils.VerifyPassword(user.Password, credentials.Password)
 	if err != nil {
 		fmt.Printf("Password mismatch for user: %s", credentials.Email)
 		return "", errors.New("incorrect email or password")

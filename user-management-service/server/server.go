@@ -22,7 +22,7 @@ func StartServer(port string) {
 	r.HandleFunc("/health", handlers.HealthCheckHandler).Methods(("GET"))
 	r.HandleFunc("/login", handlers.LoginHandler(context.Background(), repo)).Methods("POST")
 	r.HandleFunc("/signup", handlers.SignupHandler(context.Background(), repo)).Methods("POST")
-	r.HandleFunc("/resetpassword", handlers.ResetPasswordHandler).Methods("PUT")
+	r.HandleFunc("/resetpassword", handlers.ResetPasswordRequestHandler(context.Background(), repo)).Methods("PUT")
 
 	r.Use(loggingMiddleware)
 	log.Print("DB connection established 🔗\n")

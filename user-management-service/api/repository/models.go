@@ -13,7 +13,6 @@ type PasswordResetToken struct {
 	Token     pgtype.Text
 	ExpiresAt pgtype.Timestamp
 	CreatedAt pgtype.Timestamp
-	IsUsed    pgtype.Bool
 }
 
 type ProviderToken struct {
@@ -31,7 +30,7 @@ type User struct {
 	ID        pgtype.UUID
 	Email     string
 	Username  string
-	Password  pgtype.Text
+	Password  string
 	Role      string
 	UpdatedAt pgtype.Timestamp
 	CreatedAt pgtype.Timestamp

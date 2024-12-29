@@ -17,6 +17,7 @@ const logo = `
 `
 const Port = ":8000"
 
+// fetch all secrets from hashicorp vault
 func PrintLogo() {
 	fmt.Print(logo)
 }
