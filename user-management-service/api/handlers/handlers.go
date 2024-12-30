@@ -114,8 +114,8 @@ func ResetPasswordHandler(ctx context.Context, repo *repository.Queries) http.Ha
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		var req struct {
-			Token    string `json:"token"`
-			Password string `json:"new_password"`
+			Token    string
+			Password string
 		}
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil || req.Token == "" || req.Password == "" {

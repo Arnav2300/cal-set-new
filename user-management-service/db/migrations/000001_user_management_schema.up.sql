@@ -1,8 +1,8 @@
 CREATE TABLE "users" (
   "id" uuid PRIMARY KEY NOT NULL,
   "email" text UNIQUE NOT NULL,
-  "username" varchar(32) UNIQUE NOT NULL,
-  "password" varchar(16) NOT NULL,
+  "username" text UNIQUE NOT NULL,
+  "password" text NOT NULL,
   "role" text NOT NULL,
   "updated_at" timestamp,
   "created_at" timestamp DEFAULT (now())

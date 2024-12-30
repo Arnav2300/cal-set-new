@@ -26,7 +26,7 @@ func ResetPasswordService(ctx context.Context, q *repository.Queries, password s
 		return "", fmt.Errorf("user not found")
 	}
 
-	if user.Password == hashedPassword {
+	if err := utils.VerifyPassword(user.Password, password); err == nil {
 		return "", fmt.Errorf("passwords cannot be same")
 	}
 
@@ -37,6 +37,10 @@ func ResetPasswordService(ctx context.Context, q *repository.Queries, password s
 	})
 	if err != nil {
 		return "", fmt.Errorf("error updating password: %w", err)
+	}
+	err = q.DeletePasswordResetToken(ctx, resetToken.UserID)
+	if err != nil {
+		return "", fmt.Errorf("password could not be updated")
 	}
 	return "password updated successfully", nil
 }
