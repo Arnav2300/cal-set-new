@@ -87,7 +87,7 @@ func ResetPasswordRequestHandler(ctx context.Context, repo *repository.Queries) 
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		var req struct {
-			Email string `json:"token"`
+			Email string `json:"email"`
 		}
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil || req.Email == "" {
@@ -95,6 +95,41 @@ func ResetPasswordRequestHandler(ctx context.Context, repo *repository.Queries) 
 			json.NewEncoder(w).Encode(map[string]string{"message": "invalid request"})
 			return
 		}
+		resetToken, err := services.ResetPasswordRequestService(ctx, repo, req.Email)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
+			return
+		}
+		resetLink := fmt.Sprintf("http://fonrtentlinkblahblah.com/reset-password?token=%s", resetToken)
 
+		// TODO: send above link to user via email service
+		fmt.Print(resetLink)
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{"message": "check your inbox, password reset link will be valid for 30 minutes"})
+	}
+}
+
+func ResetPasswordHandler(ctx context.Context, repo *repository.Queries) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		var req struct {
+			Token    string `json:"token"`
+			Password string `json:"new_password"`
+		}
+		err := json.NewDecoder(r.Body).Decode(&req)
+		if err != nil || req.Token == "" || req.Password == "" {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{"message": "invalid request"})
+			return
+		}
+		message, err := services.ResetPasswordService(ctx, repo, req.Password, req.Token)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{"message": err.Error()})
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{"message": message})
 	}
 }

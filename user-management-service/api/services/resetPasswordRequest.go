@@ -4,15 +4,14 @@ import (
 	"context"
 	"fmt"
 	"time"
-	"user-management-service/api/dto"
 	"user-management-service/api/repository"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func ResetPasswordRequestService(ctx context.Context, q *repository.Queries, dto dto.ResetPasswordRequest) (string, error) {
-	user, err := q.GetUserByEmail(ctx, dto.Email)
+func ResetPasswordRequestService(ctx context.Context, q *repository.Queries, email string) (string, error) {
+	user, err := q.GetUserByEmail(ctx, email)
 	if err != nil {
 		return "", fmt.Errorf("error fetching user by email: %w", err)
 	}

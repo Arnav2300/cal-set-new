@@ -92,6 +92,24 @@ func (q *Queries) DeleteUserById(ctx context.Context, id pgtype.UUID) error {
 	return err
 }
 
+const getPasswordResetToken = `-- name: GetPasswordResetToken :one
+SELECT user_id, token, expires_at, created_at
+FROM password_reset_tokens
+WHERE token = $1
+`
+
+func (q *Queries) GetPasswordResetToken(ctx context.Context, token pgtype.Text) (PasswordResetToken, error) {
+	row := q.db.QueryRow(ctx, getPasswordResetToken, token)
+	var i PasswordResetToken
+	err := row.Scan(
+		&i.UserID,
+		&i.Token,
+		&i.ExpiresAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getPasswordResetTokenByUserID = `-- name: GetPasswordResetTokenByUserID :one
 SELECT user_id, token, expires_at, created_at
 FROM password_reset_tokens
